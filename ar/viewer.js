@@ -15,6 +15,7 @@ try {
  const a=document.getElementById('posterLink');a.href='poster.html?id='+encodeURIComponent(id);a.hidden=false;
  scene=document.createElement('a-scene');
  scene.setAttribute('mindar-image',{imageTargetSrc:row.target_url,autoStart:false,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:.001,filterBeta:.001,warmupTolerance:5,missTolerance:10});
+ scene.setAttribute('renderer','alpha: true; colorManagement: true');
  scene.setAttribute('vr-mode-ui','enabled: false');scene.setAttribute('device-orientation-permission-ui','enabled: false');
  const assets=document.createElement('a-assets');video=document.createElement('video');video.id='arVideo';video.crossOrigin='anonymous';video.src=row.video_url;video.loop=true;video.muted=true;video.defaultMuted=true;video.playsInline=true;video.preload='auto';video.setAttribute('playsinline','');video.setAttribute('muted','');assets.append(video);scene.append(assets);
  const camera=document.createElement('a-camera');camera.setAttribute('look-controls','enabled: false');scene.append(camera);
@@ -25,7 +26,7 @@ try {
  target.addEventListener('targetLost',()=>{found=false;video.pause();say('Kameranı tekrar postere tut');});
  video.addEventListener('waiting',()=>{if(found)say('Video yükleniyor…');});video.addEventListener('playing',()=>{if(found)say('Poster tanındı · Video oynuyor');});
  video.addEventListener('error',()=>{say('Video yüklenemedi. Bağlantını veya videonun biçimini kontrol et.');});
- scene.addEventListener('arReady',()=>say('Kameranı posterin tamamına doğrult'));
+ scene.addEventListener('arReady',()=>{document.documentElement.classList.add('ar-camera-active');say('Kameranı posterin tamamına doğrult');});
  scene.addEventListener('arError',()=>say('Kamera başlatılamadı. Tarayıcı kamera izinlerini kontrol et.'));
  scene.addEventListener('loaded',async()=>{say('Kamera hazırlanıyor…');try{await scene.systems['mindar-image-system'].start();}catch{say('Kamera veya hedef dosyası yüklenemedi. İzinleri ve interneti kontrol et.');}},{once:true});
  document.body.append(scene);
