@@ -20,7 +20,17 @@
   if (!cfg || !(cfg.aspectRatio > 0)) return fail('Afiş boyut ayarını kontrol et.');
   const setStatus = text => { status.hidden = false; status.textContent = text; };
   scene = document.createElement('a-scene');
-  scene.setAttribute('mindar-image', {imageTargetSrc: cfg.target, autoStart: false, uiLoading: 'no', uiScanning: 'no', uiError: 'no'});
+ scene.setAttribute('mindar-image', {
+  imageTargetSrc: cfg.target,
+  autoStart: false,
+  uiLoading: 'no',
+  uiScanning: 'no',
+  uiError: 'no',
+  filterMinCF: 0.001,
+  filterBeta: 0.001,
+  warmupTolerance: 5,
+  missTolerance: 10
+});
   scene.setAttribute('vr-mode-ui', 'enabled: false');
   scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
   scene.setAttribute('renderer', 'colorManagement: true; alpha: true');
