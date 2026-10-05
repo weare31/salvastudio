@@ -1,27 +1,16 @@
 <!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#101719">
-  <title>Öteki Taraf · AR Denemesi</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="config.js"></script>
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-</head>
-<body>
-  <main id="intro">
-    <span class="eyebrow">ÖTEKİ TARAF / ALTYAPI DENEMESİ</span>
-    <h1>Görünenin<br>ötesine bak.</h1>
-    <p>Örnek kartı başka bir ekranda aç veya yazdır. Sonra bu sayfayı telefonda açıp kameranı karta tut.</p>
-    <a href="afis.html" target="_blank" rel="noopener">Örnek kartı aç ↗</a>
-    <p id="startup" role="status">Kamera hazırlanıyor…</p>
-    <button id="retry" hidden>Yeniden dene</button>
-    <small>Kamera izni gerekir. Bu sayfa kamera görüntülerini kaydetmez veya bir sunucuya göndermez.</small>
-  </main>
-  <div id="status" role="status" aria-live="polite" hidden></div>
-  <div id="hint" hidden>Kartın tamamını kadraja al · İyi ışık kullan</div>
-  <script src="app.js"></script>
-</body>
-</html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Salva AR · Çalışmalarım</title><link rel="stylesheet" href="style.css">
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script></head>
+<body><header><a class="brand" href="./">SALVA<span> AR</span></a><a href="../">Stüdyoya dön ↗</a></header>
+<main><section class="hero"><span class="eyebrow">POSTERDEN HAREKETE</span><h1>Görselini yükle.<br>Hikâyeni ortaya çıkar.</h1><p>Bir poster ve bir video. Paylaşılabilir bir artırılmış gerçeklik deneyimi.</p></section>
+<section id="auth" class="panel"><h2>Başlamak için giriş yap</h2><form id="authForm"><label>E-posta<input id="email" type="email" autocomplete="email" required></label><label>Şifre<input id="password" type="password" autocomplete="current-password" minlength="8" required></label><div class="actions"><button type="submit">Giriş yap</button><button type="button" id="signup" class="secondary">Hesap oluştur</button></div></form><p class="muted">Hesap oluşturduktan sonra e-postandaki doğrulama bağlantısını aç.</p></section>
+<section id="workspace" hidden><div class="section-head"><h2>Yeni çalışma</h2><button id="logout" class="secondary">Çıkış yap</button></div>
+<form id="uploadForm" class="panel"><label>Çalışma adı<input id="title" maxlength="80" placeholder="Örneğin: Görünmeyen şehir" required></label>
+<div class="columns"><label class="file">01 · Poster<input id="poster" type="file" accept="image/jpeg,image/png" required><small>JPG / PNG · En fazla 2 MB</small><img id="posterPreview" hidden alt="Poster önizlemesi"></label>
+<label class="file">02 · Video<input id="video" type="file" accept="video/mp4" required><small>MP4 · En fazla 10 MB · Posterle aynı oran</small><video id="videoPreview" controls muted playsinline hidden></video></label></div>
+<details><summary>Tanıma dosyası hazır mı?</summary><p>Otomatik poster hazırlığı çalışmazsa resmi <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank" rel="noopener">MindAR derleyicisinde</a> aynı posteri derleyip .mind dosyasını buraya ekleyebilirsin.</p><input id="target" type="file" accept=".mind"></details>
+<p class="muted">Video sessiz oynar. Çalışmalar bağlantıya sahip herkes tarafından görüntülenebilir. Kendi içeriğini veya kullanma iznin olan dosyaları yükle. Kişi başına 3 çalışma.</p>
+<button id="publish" type="submit">AR deneyimini yayınla</button><progress id="progress" max="100" value="0" hidden></progress></form>
+<div class="section-head"><h2>Çalışmalarım</h2><button id="refresh" class="secondary">Yenile</button></div><div id="projects" class="project-grid"></div></section>
+<p id="message" role="status" aria-live="polite"></p></main><footer>Salva AR · Kamera görüntüleri kaydedilmez.</footer><script src="studio.js"></script></body></html>
