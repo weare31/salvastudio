@@ -1,0 +1,144 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; background: #0d0d0d; }
+
+.catalog-stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0d0d;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  width: 100dvw;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.catalog-spread {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* the outer spread is the ONLY thing that gets a shadow/background —
+     individual pages carry none, so there is no seam between them */
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+  transition: opacity 220ms ease, transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.catalog-page {
+  display: block;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  object-fit: contain; /* safety net only, dimensions are pre-solved from
+                           the image's own intrinsic ratio */
+}
+
+.catalog-page--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a9099;
+  background: #1a1a1a; /* only the fallback state gets a background */
+  font: 500 13px/1.4 -apple-system, system-ui, sans-serif;
+  text-align: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.catalog-empty {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a9099;
+  background: #0d0d0d;
+  font: 500 14px system-ui, sans-serif;
+  text-align: center;
+  padding: 24px;
+}
+
+/* --- Orientation prompt --------------------------------------------- */
+.orientation-prompt {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  color: #e7ebee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+  text-align: center;
+  padding-top: max(32px, env(safe-area-inset-top));
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+.orientation-prompt__icon { color: #9aa2ab; animation: rotate-hint 2.2s ease-in-out infinite; }
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-90deg); }
+}
+.orientation-prompt__title { font: 600 17px/1.4 -apple-system, system-ui, sans-serif; max-width: 280px; margin: 0; }
+.orientation-prompt__desc { font: 400 13px/1.5 -apple-system, system-ui, sans-serif; color: #9aa2ab; max-width: 280px; margin: 0; }
+.orientation-prompt__secondary {
+  margin-top: 10px;
+  background: rgba(255,255,255,.08);
+  color: #cfd6dc;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font: 500 13px system-ui, sans-serif;
+}
+
+/* --- Controls --------------------------------------------------------- */
+.viewer-controls {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+.viewer-controls:hover,
+.viewer-controls:focus-within { opacity: 1; }
+
+.viewer-controls__btn {
+  background: rgba(255,255,255,.08);
+  color: #e7ebee;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  width: 34px; height: 34px;
+  font-size: 16px;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+.viewer-controls__counter {
+  color: #cfd6dc;
+  font: 500 12px system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  min-width: 64px;
+  text-align: center;
+}
+.viewer-controls__fullscreen { margin-left: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-spread { transition: none; }
+  .orientation-prompt__icon { animation: none; }
+}

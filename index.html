@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>21 — Creative Studio</title>
+<meta name="description" content="21 is a creative studio working across photography, cinematography, branding, social and content production. We believe strong visuals create unforgettable brands.">
+<meta name="keywords" content="21 studio, creative agency, photography studio, commercial film production, brand identity agency, content production studio">
+<meta property="og:title" content="21 — Creative Studio">
+<meta property="og:description" content="Photography. Film. Brand. A creative studio building unforgettable visual identities.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="images/og-cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<input type="checkbox" id="menu-toggle" class="menu-toggle-input">
+
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a href="#top" class="navbar__logo">21</a>
+
+    <nav class="navbar__links">
+      <a href="index2.html">İşlerimiz</a>
+      <a href="#services">Yaptıklarımız</a>
+      <a href="#about">Hakkımızda</a>
+      <a href="#process">Süreç</a>
+      <a href="#contact">İletişim</a>
+    </nav>
+
+    <a href="#contact" class="navbar__cta">Bize Ulaşın!</a>
+
+    <label for="menu-toggle" class="navbar__burger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+  </div>
+
+  <!-- fullscreen mobile menu -->
+  <div class="mobile-menu">
+    <nav class="mobile-menu__links">
+      <a href="#work">İşlerimiz</a>
+      <a href="#services">Yaptıklarımız</a>
+      <a href="#about">hakkımızda</a>
+      <a href="#process">süreç</a>
+      <a href="#contact">iletişim</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="top" class="hero">
+  <video class="hero__video" autoplay muted loop playsinline oncanplay="this.playbackRate = 0.7;" poster="images/hero-poster.jpg">
+  <source src="videos/hero.mp4" type="video/mp4">
+</video>
+  <div class="hero__overlay"></div>
+  <div class="hero__vignette"></div>
+
+  <div class="container hero__inner">
+    <div class="hero__meta">
+      <span></span>
+      <span> Kütahya</span>
+    </div>
+
+    <div class="hero__center">
+      <h1 class="hero__title reveal-up" style="--d:0.1s">
+    <img src="logo.png" alt="WeAre21 Logo" class="hero__logo">
+  </h1>
+      <p class="hero__subtitle reveal-up" style="--d:0.3s">Creative Studio.</p>
+      <p class="hero__tags reveal-up" style="--d:0.5s">Dijital Medya<span>/</span>Fotoğraf<span>/</span>Marka Kimliği</p>
+    </div>
+
+    <div class="hero__cta reveal-up" style="--d:0.7s">
+      <a href="#work" class="btn btn--outline">İşlerimizi İnceleyin <span class="btn__arrow">↓</span></a>
+    </div>
+  </div>
+</section>
+
+<main>
+
+<!-- ================= SELECTED WORK ================= -->
+<section id="work" class="section">
+  <div class="container">
+    <div class="section__head">
+      <h2 class="reveal-on-scroll">Seçtiğimiz İşler</h2>
+      <span class="section__count">(01 — 06)</span>
+    </div>
+
+    <div class="work-grid">
+
+      <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">01</span><span class="year">2026</span></div>
+        <div class="work-card__image">
+          <img src="images/otel1.jpg" alt="Norra — Brand Identity / Film" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Clovers Otel</h3><p>Kurumsal Fotoğraf çekimi</p></div>
+      </a>
+
+      <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">02</span><span class="year">2025</span></div>
+        <div class="work-card__image">
+          <img src="images/otel2.png" alt="Marrow — Photography / Campaign" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Clovers Otel</h3><p>Kurumsal Fotoğraf çekimi</p></div>
+      </a>
+
+      <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">03</span><span class="year">2024</span></div>
+        <div class="work-card__image">
+          <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1600&auto=format&fit=crop" alt="Halcyon — Commercial Film" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Halcyon</h3><p>Commercial Film</p></div>
+      </a>
+
+      <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">04</span><span class="year">2024</span></div>
+        <div class="work-card__image">
+          <img src="https://images.unsplash.com/photo-1493723843671-1d655e66ac1c?q=80&w=1600&auto=format&fit=crop" alt="Feld — Social / Content Production" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Feld</h3><p>Social / Content Production</p></div>
+      </a>
+
+      <!-- <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">05</span><span class="year">2024</span></div>
+        <div class="work-card__image">
+          <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" alt="Ostro — Creative Direction" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Ostro</h3><p>Creative Direction</p></div>
+      </a>
+
+      <a href="#contact" class="work-card">
+        <div class="work-card__top"><span class="idx">06</span><span class="year">2023</span></div>
+        <div class="work-card__image">
+          <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=1600&auto=format&fit=crop" alt="Vantage — Brand Identity" loading="lazy">
+        </div>
+        <div class="work-card__bottom"><h3>Vantage</h3><p>Brand Identity</p></div>
+      </a> -->
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section id="services" class="section">
+  <div class="container">
+    <div class="section__head">
+      <h2 class="reveal-on-scroll">Neler Yapıyoruz?</h2>
+      <span class="section__count section__count--text">Her zaman en iyisini yapıyoruz!</span>
+    </div>
+
+    <div class="accordion">
+
+      <details class="accordion__item" open>
+        <summary>Fotoğraf Prodüksiyonu <span class="accordion__icon">+</span></summary>
+        <p>Estetiğin ötesinde; markanın ruhunu donduran, stratejiyle tasarlanmış editoryal ve kampanya kareleri.</p>
+      </details>
+
+      <details class="accordion__item">
+        <summary>Film Prodüksiyonu <span class="accordion__icon">+</span></summary>
+        <p>İzlenip geçilen değil; kitleleri harekete geçiren, algıyı yöneten sinematik hikayeler.</p>
+      </details>
+
+      <details class="accordion__item">
+        <summary>Dijital Varlık & Sosyal Medya <span class="accordion__icon">+</span></summary>
+        <p>Zamana ve trendlere yenilmeyen; kalıcı bir miras yaratmak için inşa edilmiş ikonik görsel diller.</p>
+      </details>
+
+      <details class="accordion__item">
+        <summary>Uçtan Uca Prodüksiyon <span class="accordion__icon">+</span></summary>
+        <p>Boş bir taslaktan yayındaki son kurguya kadar; vizyondan asla taviz vermeyen anahtar teslim üretim.</p>
+      </details>
+
+      <details class="accordion__item">
+        <summary>Kreatif Yönetim <span class="accordion__icon">+</span></summary>
+        <p>Markanın omurgasını koruyan, tüm karmaşık parçaları tek ve kusursuz bir vizyonda birleştiren keskin bakış açısı.</p>
+      </details>
+
+      <!-- <details class="accordion__item">
+        <summary>Creative Direction <span class="accordion__icon">+</span></summary>
+        <p>The point of view that holds a brand together.</p>
+      </details> -->
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="section">
+  <div class="container about-grid">
+    <div class="about-grid__label">
+      <span class="eyebrow">(Hakkımızda)</span>
+    </div>
+    <div class="about-grid__content">
+      <p class="statement reveal-on-scroll">Markaları sadece tasarlamıyor, uçtan uca inşa ediyoruz.</p>
+      <p class="body-copy"> 21, bağımsız bir kreatif stüdyodur. Aynı anda yalnızca sınırlı sayıda markaya odaklanırız; çünkü fabrikasyon işlere inanmıyoruz. Kimlik tasarımından prodüksiyona, dijital deneyimden koda kadar her detayı kendi mutfağımızda şekillendiriyoruz. Ortaya çıkan her işin taklit edilemez ve tamamen o markanın karakterine özel olmasının tek yolu bu.</p>
+
+      <div class="stats">
+        <div><strong>100+</strong><span>proje</span></div>
+        <div><strong>%100</strong><span>bağımsız Odak</span></div>
+        <div><strong>7+</strong><span>Partner </span></div>
+        <div><strong>360°</strong><span>Kapsamlı Deneyim</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROCESS ================= -->
+<section id="process" class="section">
+  <div class="container">
+    <h2 class="reveal-on-scroll">Süreç</h2>
+
+    <div class="timeline">
+      <div class="timeline__line"></div>
+
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <span class="idx">01</span>
+        <h3>Keşif</h3>
+        <p>Markayı, sektörü ve doldurulması gereken o kritik boşluğu analiz ediyoruz.</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <span class="idx">02</span>
+        <h3>Yaratım</h3>
+        <p>Fikirleri acımasızca test ediyor, yalnızca en güçlü konseptin hayatta kalmasına izin veriyoruz.</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <span class="idx">03</span>
+        <h3>Prodüksiyon</h3>
+        <p>İster sette ister ekranda; vizyonu hiçbir taviz vermeden gerçeğe dönüştürüyoruz.</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <span class="idx">04</span>
+        <h3>Teslimat</h3>
+        <p>Kusursuzca işlenmiş, hedefe kilitlenmiş ve tam zamanında. Sahneye çıkmaya hazır.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 
+<section class="section section--marquee">
+  <div class="container">
+    <h2 class="reveal-on-scroll">Bize Güvenenler</h2>
+  </div>
+  <div class="marquee">
+    <div class="marquee__track">
+      <span>Norra</span><span>Marrow</span><span>Halcyon</span><span>Feld</span>
+      <span>Ostro</span><span>Vantage</span><span>Kindred</span><span>Solace</span>
+      <span>Norra</span><span>Marrow</span><span>Halcyon</span><span>Feld</span>
+      <span>Ostro</span><span>Vantage</span><span>Kindred</span><span>Solace</span>
+    </div>
+  </div>
+</section> -->
+
+<!-- ================= TESTIMONIALS (pure CSS radio slider) =================
+<section class="section">
+  <div class="container">
+    <h2 class="reveal-on-scroll">What Clients Say</h2>
+
+    <div class="slider">
+      <input type="radio" name="slide" id="slide-1" class="slider__radio" checked>
+      <input type="radio" name="slide" id="slide-2" class="slider__radio">
+      <input type="radio" name="slide" id="slide-3" class="slider__radio">
+
+      <div class="slider__track">
+
+        <div class="slider__slide" id="panel-1">
+          <p class="quote">“21 didn't just shoot our campaign, they gave the brand a way of seeing itself. Every asset since has followed their language.”</p>
+          <div class="slider__author"><strong>Elif Duran</strong><span>Marketing Director, Norra</span></div>
+        </div>
+
+        <div class="slider__slide" id="panel-2">
+          <p class="quote">“The most disciplined creative team we've worked with. Nothing ships until it's right — and it's always right.”</p>
+          <div class="slider__author"><strong>Marcus Ege</strong><span>Founder, Halcyon</span></div>
+        </div>
+
+        <div class="slider__slide" id="panel-3">
+          <p class="quote">“They think like an in-house team but move like an agency three times their size.”</p>
+          <div class="slider__author"><strong>Priya Nair</strong><span>Brand Lead, Feld</span></div>
+        </div>
+
+      </div>
+
+      <div class="slider__dots">
+        <label for="slide-1"></label>
+        <label for="slide-2"></label>
+        <label for="slide-3"></label>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+<!-- ================= CONTACT ================= -->
+<section id="contact" class="section">
+  <div class="container">
+    <h2 class="statement reveal-on-scroll">Sıradanlığı arkanızda bırakmaya hazırsanız, başlayalım.</h2>
+
+    <a href="mailto:hello@weare21.co" class="contact-email">
+      hello@weare21.co <span class="contact-email__arrow">↗</span>
+    </a>
+
+    <div class="channels">
+      <a href="mailto:hello@weare21.co">
+        <span class="eyebrow">Email</span>
+        <p>hello@weare21.co</p>
+      </a>
+      <a href="https://instagram.com/weare21.co" target="_blank" rel="noreferrer">
+        <span class="eyebrow">Instagram</span>
+        <p>@weare21.co</p>
+      </a>
+      <a href="tel:+905550002121">
+        <span class="eyebrow">Phone</span>
+        <p>+90 551 954 80 82</p>
+        <p>+90 552 002 58 82</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="container">
+    <a href="logo.png" class="footer__wordmark"></a>
+
+    <div class="footer__row">
+      <nav class="footer__nav">
+        <a href="#work">İşlerimiz</a>
+        <a href="#services">Yapıtklarımız</a>
+        <a href="#about">Hakkımızda</a>
+        <a href="#process">Süreç</a>
+        <a href="#contact">İletişim</a>
+      </nav>
+
+      <div class="footer__social">
+        <a href="https://instagram.com/weare21.co" target="_blank" rel="noreferrer">Instagram</a>
+        <a href="mailto:hello@weare21.co">Email</a>
+      </div>
+
+      <p class="footer__copy">© 2026 21 Creative Studio. Bütün hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
