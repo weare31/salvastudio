@@ -2,6 +2,7 @@
 const status=document.getElementById('viewerStatus'),cfg=window.SALVA;
 const say=text=>status.textContent=text;
 let scene,video,found=false;
+const sound=document.getElementById('soundToggle');
 try {
  if(!isSecureContext)throw new Error('Kamera için HTTPS adresini kullan.');
  if(!window.supabase||!window.AFRAME||!AFRAME.components['mindar-image'])throw new Error('AR kütüphaneleri yüklenemedi. Sayfayı yeniden aç.');
@@ -22,8 +23,9 @@ try {
  const target=document.createElement('a-entity');target.setAttribute('mindar-image-target','targetIndex: 0');
  const plane=document.createElement('a-video');plane.setAttribute('src','#arVideo');plane.setAttribute('width','1');plane.setAttribute('height',String(1/row.aspect_ratio));plane.setAttribute('position','0 0 .001');target.append(plane);scene.append(target);
  async function play(){try{await video.play();if(!found||document.hidden)video.pause();}catch{say('Tarayıcı otomatik oynatmayı engelledi. Sayfayı yeniden açıp dene.');}}
- target.addEventListener('targetFound',()=>{found=true;document.getElementById('viewerLinks').hidden=true;say('Poster tanındı');play();});
- target.addEventListener('targetLost',()=>{found=false;video.pause();say('Kameranı tekrar postere tut');});
+ target.addEventListener('targetFound',()=>{found=true;if(sound)sound.hidden=false;document.getElementById('viewerLinks').hidden=true;say('Poster tanındı');play();});
+ target.addEventListener('targetLost',()=>{found=false;video.pause();if(sound)sound.hidden=true;say('Kameranı tekrar postere tut');});
+ if(sound){sound.onclick=async()=>{const enable=video.muted;video.muted=!enable;try{if(found)await video.play();sound.textContent=video.muted?'Sesi aç':'Sesi kapat';sound.setAttribute('aria-pressed',String(!video.muted));}catch{video.muted=true;sound.textContent='Sesi aç';sound.setAttribute('aria-pressed','false');say('Ses açılamadı. Tekrar dokunabilirsin.');}};}
  video.addEventListener('waiting',()=>{if(found)say('Video yükleniyor…');});video.addEventListener('playing',()=>{if(found)say('Poster tanındı · Video oynuyor');});
  video.addEventListener('error',()=>{say('Video yüklenemedi. Bağlantını veya videonun biçimini kontrol et.');});
  scene.addEventListener('arReady',()=>{document.documentElement.classList.add('ar-camera-active');say('Kameranı posterin tamamına doğrult');});

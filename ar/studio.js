@@ -1,94 +1,50 @@
 (() => {
 'use strict';
-const $ = id => document.getElementById(id);
-const cfg = window.SALVA;
-if (!window.supabase) { $('message').textContent = 'Bağlantı dosyaları yüklenemedi. Sayfayı yeniden aç.'; return; }
-const db = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
-let session = null, busy = false;
-const urls = {};
-function message(text, error = false) { $('message').textContent = text; $('message').classList.toggle('error',error); }
-function lock(value) { busy=value; $('publish').disabled=value; $('logout').disabled=value; }
-async function loadProjects() {
-  if (!session) return;
-  const {data,error}=await db.from('ar_projects').select('id,title,poster_url,state,created_at').eq('owner_id',session.user.id).order('created_at',{ascending:false});
-  if(error) { message('Çalışmalar yüklenemedi. Veritabanı kurulumunu kontrol et.',true); return; }
-  $('projects').replaceChildren();
-  if (!data.length) $('projects').textContent='İlk çalışmanı yukarıdan yükle.';
-  for(const row of data) {
-    const article=document.createElement('article');article.className='project';
-    const h=document.createElement('h3');h.textContent=row.title;article.append(h);
-    if(row.poster_url) { const img=document.createElement('img');img.src=row.poster_url;img.alt=row.title;img.loading='lazy';article.append(img); }
-    const actions=document.createElement('div');actions.className='actions';
-    if(row.state==='published') {
-      const link=new URL('view.html',location.href);link.searchParams.set('id',row.id);
-      const a=document.createElement('a');a.href=link.href;a.textContent='AR deneyimini aç ↗';a.target='_blank';a.rel='noopener';actions.append(a);
-      const posterLink=document.createElement('a');const p=new URL('poster.html',location.href);p.searchParams.set('id',row.id);posterLink.href=p.href;posterLink.target='_blank';posterLink.rel='noopener';posterLink.textContent='Posteri aç';actions.append(posterLink);
-      const copy=document.createElement('button');copy.className='secondary';copy.textContent='Linki kopyala';copy.onclick=async()=>{try{await navigator.clipboard.writeText(link.href);message('AR linki kopyalandı.');}catch{message(link.href);}};actions.append(copy);
-    } else {const p=document.createElement('p');p.textContent=row.state==='uploading'?'Yükleme sürüyor veya yarım kaldı.':'Yükleme tamamlanamadı.';actions.append(p);}
-    const del=document.createElement('button');del.className='secondary';del.textContent='Sil';del.onclick=async()=>{
-      if(busy || !confirm('Bu çalışmayı ve yüklenen dosyalarını silmek istiyor musun?'))return;
-      lock(true);
-      try{await call({action:'delete',id:row.id});message('Çalışma silindi.');await loadProjects();}catch(e){message(e.message,true);}finally{lock(false);}
-    };actions.append(del);article.append(actions);$('projects').append(article);
-  }
-}
-function updateSession(next) { session=next;$('auth').hidden=!!next;$('workspace').hidden=!next;if(next) loadProjects(); }
-db.auth.getSession().then(({data,error})=>{if(error)message(error.message,true);updateSession(data.session);});
-db.auth.onAuthStateChange((_event,next)=>{setTimeout(()=>updateSession(next),0);});
-$('authForm').onsubmit=async e=>{e.preventDefault();message('Giriş yapılıyor…');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});message(error ? error.message : 'Giriş yapıldı.',!!error);};
-$('signup').onclick=async()=>{
- if(!$('authForm').reportValidity())return;
- $('signup').disabled=true;
- const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value,options:{emailRedirectTo:new URL('./',location.href).href}});
- message(error ? error.message : 'Doğrulama e-postanı kontrol et. Daha sonra burada giriş yapabilirsin.',!!error);$('signup').disabled=false;
-};
-$('logout').onclick=async()=>{const {error}=await db.auth.signOut();message(error?error.message:'Çıkış yapıldı.',!!error);};
-$('refresh').onclick=loadProjects;
-for(const name of ['poster','video']) $(name).onchange=()=>{
- const file=$(name).files[0];if(urls[name])URL.revokeObjectURL(urls[name]);
- const preview=$(name+'Preview');preview.hidden=!file;
- if(file){urls[name]=URL.createObjectURL(file);preview.src=urls[name];if(name==='video')preview.load();}
-};
-async function call(body) {
- const {data,error}=await db.auth.getSession();if(error || !data.session)throw new Error('Yüklemek için tekrar giriş yap.');
- const isForm=body instanceof FormData;
- const response=await fetch(cfg.supabaseUrl+'/functions/v1/'+cfg.functionName,{
- method:'POST',headers:{apikey:cfg.supabaseKey,Authorization:'Bearer '+data.session.access_token,...(isForm?{}:{'Content-Type':'application/json'})},body:isForm?body:JSON.stringify(body)
- });
- let result;try{result=await response.json();}catch{throw new Error('Sunucu yanıtı okunamadı. Edge Function kurulumunu kontrol et.');}
- if(!response.ok)throw new Error(result.error || 'Yükleme başarısız ('+response.status+').');
- return result;
-}
-function readImage(file){return new Promise((resolve,reject)=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(u);resolve(img);};img.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Poster okunamadı. JPG veya PNG kullan.'));};img.src=u;});}
-function readVideo(file){return new Promise((resolve,reject)=>{const v=document.createElement('video');const u=URL.createObjectURL(file);v.preload='metadata';v.onloadedmetadata=()=>{const data={width:v.videoWidth,height:v.videoHeight,duration:v.duration};URL.revokeObjectURL(u);v.removeAttribute('src');v.load();resolve(data);};v.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Video okunamadı. H.264 MP4 kullan.'));};v.src=u;});}
-$('uploadForm').onsubmit=async e=>{
- e.preventDefault();if(busy)return;lock(true);$('progress').hidden=false;$('progress').value=0;
- try {
- const poster=$('poster').files[0],video=$('video').files[0];
- if(!poster || !video)throw new Error('Poster ve video seç.');
- if(!['image/jpeg','image/png'].includes(poster.type)||poster.size>2*1024*1024)throw new Error('Poster JPG/PNG ve en fazla 2 MB olmalı.');
- if(video.type!=='video/mp4'||video.size>10*1024*1024)throw new Error('Video MP4 ve en fazla 10 MB olmalı.');
- const img=await readImage(poster),meta=await readVideo(video);
- if(img.width>4096||img.height>4096)throw new Error('Poster kenarlarını en fazla 4096 piksel olarak küçült.');
- const ratio=img.width/img.height;
- if(!meta.width||!meta.height||!Number.isFinite(meta.duration)||meta.duration>60)throw new Error('Video en fazla 60 saniye olmalı.');
- if(Math.abs((meta.width/meta.height)/ratio-1)>.03)throw new Error('Poster ve videonun en-boy oranları aynı olmalı.');
- let target=$('target').files[0];
- if(!target){
-   if(!window.MINDAR?.IMAGE?.Compiler)throw new Error('Derleyici yüklenemedi. Tanıma dosyası bölümünden .mind dosyası ekleyebilirsin.');
-   message('Poster tanıma dosyası hazırlanıyor. Bu işlem biraz sürebilir…');
-   const canvas=document.createElement('canvas');const factor=Math.min(1,1200/Math.max(img.width,img.height));canvas.width=Math.round(img.width*factor);canvas.height=Math.round(img.height*factor);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-   const input=new Image();input.src=canvas.toDataURL('image/png');await input.decode();
-   const compiler=new MINDAR.IMAGE.Compiler();
-   await compiler.compileImageTargets([input],value=>{$('progress').value=Math.min(75,Math.round(value*.75));});
-   const binary=await compiler.exportData();target=new File([binary],'targets.mind',{type:'application/octet-stream'});
- }
- if(!target.name.toLowerCase().endsWith('.mind')||target.size>5*1024*1024||!target.size)throw new Error('Tanıma dosyası .mind ve en fazla 5 MB olmalı.');
- const form=new FormData();form.set('title',$('title').value.trim());form.set('aspect_ratio',String(ratio));form.set('poster',poster);form.set('video',video);form.set('target',target);
- $('progress').value=80;message('Dosyalar yükleniyor. Bu sayfayı kapatma…');
- await call(form);$('progress').value=100;message('Çalışman yayınlandı. Aşağıdaki AR linkini telefonunda aç.');
- $('uploadForm').reset();for(const name of ['poster','video']){if(urls[name])URL.revokeObjectURL(urls[name]);$(name+'Preview').hidden=true;}
- await loadProjects();
- }catch(error){message(error.message,true);}finally{lock(false);}
-};
+const app=window.SalvaApp;if(!app)return;
+const {db,message,call,bytes}=app,$=id=>document.getElementById(id);
+let session=null,busy=false,editId=null,rows=[],caps=null,imgMeta=null,videoMeta=null,compressed=null,selection=new Set(),generation=0;
+const urls={},pending={poster:0,video:0};
+function lock(value){busy=value;for(const id of ['publish','logout','newProject','cancelEdit','compressVideo','poster','video','target','title'])$(id).disabled=value;}
+function previewUrl(key,file){if(urls[key])URL.revokeObjectURL(urls[key]);urls[key]=URL.createObjectURL(file);return urls[key];}
+function resetEditor(id=null){if(busy)return;generation++;pending.poster++;pending.video++;editId=id;imgMeta=null;videoMeta=null;compressed=null;for(const key of Object.keys(urls)){URL.revokeObjectURL(urls[key]);delete urls[key];}
+$('uploadForm').reset();$('posterPreview').hidden=true;$('videoPreview').pause();$('videoPreview').removeAttribute('src');$('videoPreview').load();$('videoPreview').hidden=true;$('overlayVideo').removeAttribute('src');$('overlayVideo').load();$('comparison').hidden=true;$('compressVideo').hidden=true;$('posterAnalysis').textContent='';$('videoInfo').textContent='';$('ratioStatus').textContent='';$('progress').hidden=true;
+$('editorTitle').textContent=id?'Projeyi güncelle':'Yeni proje';$('publish').textContent=id?'Değişiklikleri yayınla':'Projeyi yayınla';$('editNotice').hidden=!id;$('title').value=id?rows.find(r=>r.id===id).title:'';$('editor').hidden=false;$('editor').scrollIntoView({behavior:'smooth',block:'start'});}
+function compare(){if(!imgMeta||!videoMeta){$('comparison').hidden=true;return;}$('comparison').hidden=false;$('overlayStage').style.aspectRatio=String(imgMeta.width/imgMeta.height);const valid=Math.abs((videoMeta.width/videoMeta.height)/(imgMeta.width/imgMeta.height)-1)<=.03;$('ratioStatus').textContent=valid?'En-boy oranları uyumlu. İlk karedeki hizalamayı kontrol et.':'Oranlar farklı. Videoyu posterin oranında dışa aktar.';$('ratioStatus').classList.toggle('error',!valid);}
+function readImage(file){return new Promise((resolve,reject)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(u);resolve(img);};img.onerror=()=>{URL.revokeObjectURL(u);reject(Error('Poster okunamadı.'));};img.src=u;});}
+function readVideo(file){return new Promise((resolve,reject)=>{const video=document.createElement('video'),u=URL.createObjectURL(file);video.preload='metadata';video.onloadedmetadata=()=>{const meta={width:video.videoWidth,height:video.videoHeight,duration:video.duration};URL.revokeObjectURL(u);video.removeAttribute('src');video.load();resolve(meta);};video.onerror=()=>{URL.revokeObjectURL(u);reject(Error('Video okunamadı. MP4 dosyasını kontrol et.'));};video.src=u;});}
+function analyze(img){const c=document.createElement('canvas');const scale=Math.min(160/img.width,160/img.height);c.width=Math.max(2,Math.round(img.width*scale));c.height=Math.max(2,Math.round(img.height*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);const p=ctx.getImageData(0,0,c.width,c.height).data;let sum=0,squares=0,edges=0,count=0;const gray=i=>.299*p[i]+.587*p[i+1]+.114*p[i+2];for(let y=1;y<c.height;y++)for(let x=1;x<c.width;x++){const i=(y*c.width+x)*4,v=gray(i);sum+=v;squares+=v*v;edges+=Math.abs(v-gray(i-4))+Math.abs(v-gray(i-c.width*4));count++;}const contrast=Math.sqrt(Math.max(0,squares/count-(sum/count)**2)),detail=edges/count;return detail<12||contrast<25?'Az detay veya düşük kontrast görünüyor. Daha belirgin, farklı bölgelere yayılan detaylar kullan; basılı posterle test et.':'Detay ve kontrast mevcut. Bu ön kontrol tanıma puanı değildir; farklı ışıklarda telefonla dene.';}
+$('poster').onchange=async()=>{const ticket=++pending.poster,file=$('poster').files[0];imgMeta=null;$('posterPreview').hidden=true;$('comparison').hidden=true;if(!file)return;try{if(!['image/jpeg','image/png'].includes(file.type)||file.size>2*1024*1024)throw Error('Poster JPG/PNG ve en fazla 2 MB olmalı.');const img=await readImage(file);if(ticket!==pending.poster)return;if(Math.max(img.width,img.height)>4096)throw Error('Poster kenarlarını 4096 pikselin altına indir.');imgMeta=img;const u=previewUrl('poster',file);$('posterPreview').src=u;$('posterPreview').hidden=false;$('overlayPoster').src=u;$('posterAnalysis').textContent=analyze(img);compare();}catch(e){if(ticket===pending.poster)message(e.message,true);}};
+const mp4Mime=()=>{if(!window.MediaRecorder||!window.HTMLCanvasElement?.prototype.captureStream)return null;return ['video/mp4;codecs=avc1.42E01E','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||null;};
+$('video').onchange=async()=>{const ticket=++pending.video,file=$('video').files[0];compressed=null;videoMeta=null;$('videoPreview').hidden=true;$('compressVideo').hidden=true;$('comparison').hidden=true;if(!file)return;try{if(file.type!=='video/mp4')throw Error('MP4 video seç.');const meta=await readVideo(file);if(ticket!==pending.video)return;if(!meta.width||!meta.height||!Number.isFinite(meta.duration)||meta.duration>60)throw Error('Video en fazla 60 saniye olmalı.');videoMeta=meta;const u=previewUrl('video',file);$('videoPreview').src=u;$('videoPreview').hidden=false;$('overlayVideo').src=u;$('videoInfo').textContent=bytes(file.size)+' · '+meta.width+' × '+meta.height+' · '+Math.round(meta.duration)+' sn';$('compressVideo').hidden=!mp4Mime();$('compressionHelp').textContent=mp4Mime()?'Sıkıştırma sessiz bir MP4 kopyası oluşturur; gerçek zamanlı sürer.':'Bu tarayıcı MP4 sıkıştırmayı desteklemiyor. Videonu dışarıda H.264 MP4 olarak küçült.';compare();}catch(e){if(ticket===pending.video)message(e.message,true);}};
+$('overlayOpacity').oninput=()=>{$('overlayVideo').style.opacity=String(Number($('overlayOpacity').value)/100);};
+$('resetPreview').onclick=()=>{$('overlayVideo').pause();$('overlayVideo').currentTime=0;};
+$('compressVideo').onclick=async()=>{if(busy||!videoMeta)return;const mime=mp4Mime();if(!mime)return;lock(true);let stream,recorder,source,frame,stopped=false;try{
+source=document.createElement('video');source.muted=true;source.playsInline=true;source.src=urls.video;await new Promise((resolve,reject)=>{source.onloadeddata=resolve;source.onerror=()=>reject(Error('Video açılamadı.'));});const canvas=document.createElement('canvas'),factor=Math.min(1,960/Math.max(source.videoWidth,source.videoHeight));canvas.width=Math.max(2,Math.round(source.videoWidth*factor/2)*2);canvas.height=Math.max(2,Math.round(source.videoHeight*factor/2)*2);const ctx=canvas.getContext('2d');stream=canvas.captureStream(24);const chunks=[];recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:900000});const finished=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.onstop=resolve;recorder.onerror=()=>reject(Error('Sıkıştırma tamamlanamadı.'));});source.onended=()=>{stopped=true;if(recorder.state==='recording')recorder.stop();};const draw=()=>{ctx.drawImage(source,0,0,canvas.width,canvas.height);if(!stopped)frame=requestAnimationFrame(draw);};message('Video küçültülüyor. Sekmeyi açık tut…');ctx.drawImage(source,0,0,canvas.width,canvas.height);recorder.start();await source.play();draw();const timeout=new Promise((_,reject)=>setTimeout(()=>reject(Error('Sıkıştırma zaman aşımına uğradı. Orijinal video korunuyor.')),Math.ceil(videoMeta.duration*2000)+15000));await Promise.race([finished,timeout]);
+const candidate=new File(chunks,'video-compressed.mp4',{type:'video/mp4'}),original=$('video').files[0];if(!candidate.size||candidate.size>=original.size){message('Daha küçük bir kopya oluşmadı; orijinal kullanılacak.');return;}
+compressed=candidate;const u=previewUrl('compressed',candidate);$('videoPreview').src=u;$('overlayVideo').src=u;$('videoInfo').textContent=bytes(original.size)+' → '+bytes(candidate.size)+' · Sessiz kopya';message('Küçültülmüş video yüklemede kullanılacak.');
+}catch(e){message(e.message,true);}finally{stopped=true;cancelAnimationFrame(frame);if(recorder?.state==='recording')recorder.stop();stream?.getTracks().forEach(t=>t.stop());source?.pause();lock(false);}};
+function action(label,fn){const b=document.createElement('button');b.className='secondary';b.textContent=label;b.onclick=()=>{if(!busy)fn();};return b;}
+async function loadProjects(){if(!session)return;const userId=session.user.id;const {data,error}=await db.from('ar_projects').select('id,title,poster_url,state,created_at').eq('owner_id',userId).order('created_at',{ascending:false});if(!session||session.user.id!==userId)return;if(error){message('Projeler yüklenemedi. Bağlantını kontrol et.',true);return;}rows=data;selection=new Set([...selection].filter(id=>rows.some(r=>r.id===id&&r.state==='published')));caps=null;
+try{caps=await call({action:'usage'});}catch{}if(!session||session.user.id!==userId)return;
+$('usage').textContent=rows.length+' / 3 proje · '+Math.max(0,3-rows.length)+' proje hakkın kaldı.'+(caps?' · Ortak kapasite: '+bytes(caps.storageUsed)+' / '+bytes(caps.storageLimit)+' · Son 24 saatte '+caps.userAttempts+' / 5 yükleme denemesi':' Ortak kapasite bilgisi sunucu güncellemesinden sonra gösterilir.');
+$('projects').replaceChildren();if(!rows.length)$('projects').textContent='İlk projen için “Yeni proje”ye bas.';
+for(const row of rows){const a=document.createElement('article');a.className='project';const h=document.createElement('h3');h.textContent=row.title;a.append(h);if(row.poster_url){const img=document.createElement('img');img.src=row.poster_url;img.alt=row.title;img.loading='lazy';a.append(img);}const actions=document.createElement('div');actions.className='actions';
+if(row.state==='published'){const link=app.url('view.html',row.id).href;for(const [label,page] of [['AR’ı aç ↗','view.html'],['Poster / Baskı','poster.html']]){const l=document.createElement('a');l.textContent=label;l.href=app.url(page,row.id);l.target='_blank';l.rel='noopener';actions.append(l);}actions.append(action('Linki kopyala',async()=>{try{await navigator.clipboard.writeText(link);message('Bağlantı kopyalandı.');}catch{message(link);}}),action('QR indir',()=>{try{app.download(new Blob([app.qrSvg(link)],{type:'image/svg+xml'}),'salva-ar-'+row.id+'.svg');}catch(e){message(e.message,true);}}));
+const edit=action('Güncelle',()=>resetEditor(row.id));edit.disabled=!caps?.updates;edit.title=caps?.updates?'Bağlantıyı koruyarak dosyaları değiştir':'Sunucu güncellemesi gerekiyor';actions.append(edit);
+const label=document.createElement('label');label.className='check-label';const check=document.createElement('input');check.type='checkbox';check.checked=selection.has(row.id);check.onchange=()=>{if(check.checked&&selection.size>=12){check.checked=false;message('Bir koleksiyonda en fazla 12 proje seç.',true);return;}if(check.checked)selection.add(row.id);else selection.delete(row.id);};label.append(check,document.createTextNode('Koleksiyona ekle'));a.append(label);
+}else{const p=document.createElement('p');p.textContent='Yükleme tamamlanmamış. Tekrar denemek için bu kaydı silebilirsin.';a.append(p);}
+actions.append(action('Sil',async()=>{if(!confirm('Projeyi ve dosyalarını silmek istiyor musun?'))return;lock(true);try{await call({action:'delete',id:row.id});await loadProjects();message('Proje silindi.');}catch(e){message(e.message,true);}finally{lock(false);}}));a.append(actions);$('projects').append(a);}}
+let compilerPromise;async function compilerClass(){if(!compilerPromise)compilerPromise=import('https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js').then(m=>m.Compiler||window.MINDAR?.IMAGE?.Compiler);return compilerPromise;}
+$('uploadForm').onsubmit=async e=>{e.preventDefault();if(busy)return;lock(true);$('progress').hidden=false;$('progress').value=0;try{
+const poster=$('poster').files[0],video=compressed||$('video').files[0];if(!poster||!video)throw Error('Poster ve video seç.');if(!['image/jpeg','image/png'].includes(poster.type)||poster.size>2*1024*1024)throw Error('Poster en fazla 2 MB JPG/PNG olmalı.');if(video.type!=='video/mp4'||video.size>10*1024*1024)throw Error('Video en fazla 10 MB MP4 olmalı.');const img=await readImage(poster),meta=await readVideo(video);if(Math.max(img.width,img.height)>4096)throw Error('Posterin uzun kenarı en fazla 4096 px olmalı.');if(!meta.width||!meta.height||!Number.isFinite(meta.duration)||meta.duration>60)throw Error('Video en fazla 60 saniye olmalı.');const ratio=img.width/img.height;if(Math.abs((meta.width/meta.height)/ratio-1)>.03)throw Error('Poster ve video aynı en-boy oranında olmalı.');
+let target=$('target').files[0];if(!target){message('Poster tanıma dosyası hazırlanıyor…');let Compiler;try{Compiler=await compilerClass();}catch{}if(!Compiler)throw Error('Otomatik hazırlık açılamadı. Hazır .mind dosyası ekleyebilirsin.');const c=document.createElement('canvas'),factor=Math.min(1,1200/Math.max(img.width,img.height));c.width=Math.round(img.width*factor);c.height=Math.round(img.height*factor);c.getContext('2d').drawImage(img,0,0,c.width,c.height);const input=new Image();input.src=c.toDataURL('image/png');await input.decode();const compiler=new Compiler();await compiler.compileImageTargets([input],v=>{$('progress').value=Math.min(75,Math.round(v*.75));});target=new File([await compiler.exportData()],'targets.mind',{type:'application/octet-stream'});}
+if(!target.name.toLowerCase().endsWith('.mind')||!target.size||target.size>5*1024*1024)throw Error('Tanıma dosyası .mind ve en fazla 5 MB olmalı.');const form=new FormData();for(const [k,v] of Object.entries({title:$('title').value.trim(),aspect_ratio:String(ratio),poster,video,target}))form.set(k,v);if(editId){if(!caps?.updates)throw Error('Proje güncellemesi için sunucu güncellemesi gerekiyor.');form.set('replace_id',editId);}message('Dosyalar yükleniyor…');$('progress').value=80;await call(form);$('progress').value=100;$('editor').hidden=true;message(editId?'Proje güncellendi. Mevcut bağlantı ve QR geçerli.':'Proje yayınlandı. QR ve bağlantı hazır.');await loadProjects();
+}catch(e){message(e.message,true);}finally{lock(false);}};
+$('newProject').onclick=()=>{if(rows.length>=3){message('Üç proje hakkın dolu. Bir projeyi güncelle veya sil.',true);return;}resetEditor();};
+$('cancelEdit').onclick=()=>{if(!busy)$('editor').hidden=true;};
+$('shareCollection').onclick=async()=>{if(!selection.size){message('Önce en az bir yayınlanmış proje seç.',true);return;}const u=new URL('collection.html',location.href);u.searchParams.set('ids',[...selection].join(','));u.searchParams.set('title',$('collectionTitle').value.trim()||'AR Koleksiyonu');try{await navigator.clipboard.writeText(u.href);message('Koleksiyon bağlantısı kopyalandı.');}catch{message(u.href);}};
+$('logout').onclick=async()=>{if(busy)return;const {error}=await db.auth.signOut();if(error)message(error.message,true);};
+function updateSession(next){session=next;$('guest').hidden=!!next;$('workspace').hidden=!next;$('logout').hidden=!next;$('accountLink').hidden=!!next;if(next)loadProjects();else{rows=[];selection.clear();caps=null;$('editor').hidden=true;$('projects').replaceChildren();$('usage').textContent='';}}
+db.auth.getSession().then(({data,error})=>{if(error)message(error.message,true);updateSession(data.session);});db.auth.onAuthStateChange((_e,next)=>{setTimeout(()=>updateSession(next),0);});
+window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});
 })();

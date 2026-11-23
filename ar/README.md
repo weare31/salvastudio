@@ -1,39 +1,45 @@
-# AR başlangıç paketi
+# Salva AR Studio v2
 
-GitHub Pages üzerinde çalışan, sunucu veya API anahtarı istemeyen MindAR denemesi.
-İlk sürüm resmi MindAR örnek kartı üzerinde dönen halka ve küp gösterir; bu bir teknik testtir, nihai proje tasarımı değildir.
+GitHub Pages üzerinde statik stüdyo; Supabase Auth/Postgres/quick-task ve ImageKit ile çalışır.
 
-## Yayınlama
-1. GitHub'da yeni, public bir depo açın (örnek ad: ar-deneme).
-2. Bu klasörün İÇİNDEKİ dosyaları deponun köküne yükleyin. index.html doğrudan kökte olmalı.
-3. Settings → Pages → Deploy from a branch → main → /(root) → Save.
-4. GitHub'ın verdiği HTTPS adresini telefonda açın.
-5. Aynı adresin sonuna /afis.html ekleyip bilgisayarda açın. Telefona kamera izni verip bu karta doğrultun.
+## Sayfalar
+- index.html: projeler, yükleme, güncelleme, koleksiyon bağlantısı.
+- login.html / signup.html: ayrı giriş ve kayıt. Kayıt şifre tekrarı ve doğrulama maili içerir.
+- poster.html?id=UUID: poster, yerel QR üretimi, SVG indirme ve A4 yazdırma/PDF.
+- view.html?id=UUID: MindAR izleyici, kullanıcı dokunuşuyla isteğe bağlı ses.
+- collection.html?ids=UUID,UUID&title=...: en fazla 12 yayınlanmış projeden bağlantıya dayalı koleksiyon. Koleksiyon veritabanında saklanmaz; seçilen projeler ve başlık URL'dedir.
 
-Mevcut sitenin dosyalarını değiştirmek gerekmez; ayrı depo kullanın. Özel domain zorunlu değil.
-Domain/alt alan adı ayarı için önce tam domain ve mevcut Pages depo adresi belirlenmeli. Bu pakette CNAME yoktur; mevcut DNS ayarları değiştirilmemiştir.
+## Yayına alma sırası
+1. Supabase SQL Editor'de ../supabase/ar-v2.sql dosyasını çalıştır.
+2. Supabase Edge Functions içindeki MEVCUT quick-task kodunu ../supabase/quick-task.ts ile değiştirip deploy et.
+3. IMAGEKIT_PRIVATE_KEY secret'ını koru; SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY platformda mevcut olmalı. Frontend'e secret koyma.
+4. quick-task için legacy JWT gateway doğrulaması kapalı kalmalı (config.toml). Fonksiyon her istekte auth.getUser ile doğrulanmış kullanıcıyı kontrol eder.
+5. Bu dalı main'e birleştirerek GitHub Pages dosyalarını yayınla.
+6. Supabase Auth URL Configuration'da https://salvastudio.co ve kullanılıyorsa www karşılığı için /ar/ dönüş adresini kontrol et. Resend SMTP mevcut ayarları korunur.
 
-## Kendi içeriklerinizi eklemek
-1. Afişi assets/afis.jpg olarak koyun.
-2. https://hiukim.github.io/mind-ar-js-doc/tools/compile/ adresinde afişi derleyip çıkan dosyayı assets/targets.mind olarak kaydedin.
-3. config.js içindeki poster ve target alanlarını bu yollarla değiştirin. Görsel değiştirilince .mind dosyasını da yeniden üretin.
-4. Sessiz H.264 MP4 videoyu assets/animasyon.mp4 olarak ekleyin; config.js video değerini bu yola ayarlayın.
-5. aspectRatio değerini afişin genişliği / yüksekliği olarak girin. Video ve afiş aynı en-boy oranında olsun.
+SQL ve Edge Function uygulama erişimi bu çalışma ortamında yoktur. GitHub'a dosya eklemek bunları Supabase'e otomatik deploy ETMEZ.
 
-Kamera izninden sonra normal akışta başlatma butonu yoktur. Video hedef bulunduğunda oynar, kaybolduğunda durur. Yeniden bulunduğunda başa dönme config.js ile ayarlanabilir. Sesli video otomatik oynatması garanti edilmediği için sessiz oynatma kullanılır. Tarayıcıların ek engelleri cihazda test edilmelidir.
+## Geriye uyumluluk
+Önce frontend yayınlanırsa eski upload ve silme akışı çalışabilir. usage çağrısı eski sunucuda reddedilince yalnızca kişisel proje sayısı gösterilir; Güncelle butonu kapalıdır. Supabase güncellemesinden sonra gerçek ortak alan ve güncelleme açılır. Önce sunucuyu güncellemek önerilir.
 
-## Test listesi
-- iPhone Safari ve Android Chrome üzerinde kamera izni ve hedef takibi.
-- Kamera iznini reddetme durumunda açıklayıcı hata.
-- Hedefi kadrajdan çıkarma ve tekrar gösterme.
-- Videolu sürümde oynama/durma ve sekme değişiminde duraklama.
-- Baskıdan gerçek ışıkta deneme; yansıma ve zayıf ışığı kontrol etme.
+## Güncelleme davranışı
+- Projenin UUID'si, bağlantısı ve QR'ı aynı kalır.
+- Şimdilik güncellemede poster ve video yeniden seçilir; posterin kendisi değişirse basılı kopya da değiştirilmelidir.
+- Eski yayın, üç yeni dosya yüklenip tek veritabanı işlemiyle değiştirilene kadar erişilebilir.
+- Eski ve yeni dosyalar için geçici depolama sayılır. Başarısız güncelleme eski yayını korur.
+- Dosya temizlenemezse ar_replacements kaydı alanı rezerve etmeye devam eder; cleanup kayıtları usage çağrısında yeniden denenir. failed kayıtları için 15 dakika sonra ilgili projeyi silerek tüm varlıkları temizle. Otomatik sınırsız zaman aşımı temizlemesi yoktur.
+- Kayıtların RLS politikaları istemciye yazma yetkisi vermez. Yeni RPC'ler yalnızca service_role içindir.
 
-Bu paket burada gerçek telefon kamerasıyla doğrulanmadı. Canlı yayın ve cihaz testi ayrıca yapılmalı.
+## Kontroller ve sınırlar
+- Kişi başına 3 proje; son 24 saatte kişi başına 5 ve toplam 100 yükleme denemesi; global 2 GiB rezervasyon.
+- Poster en fazla 2 MiB, video 10 MiB ve hedef 5 MiB; 60 saniye ve oran kontrolleri istemcide yapılır.
+- Poster analizi küçük bir görüntüde kontrast/kenar yoğunluğu sezgisidir; MindAR'ın ölçülmüş tanıma başarısı değildir.
+- Üst üste önizleme kırpma yapmaz; kaydırıcı ilk kareyle posteri karşılaştırır.
+- Sıkıştırma yalnızca tarayıcı hem canvas.captureStream hem MP4 MediaRecorder desteklerse açılır. Video sessizleştirilir, en uzun kenar 960 px, 24 fps, hedef 900 kbps. Daha küçük oluşmazsa orijinal korunur. Desteklenmeyen tarayıcıda dışarıda MP4 hazırlama açıklaması gösterilir.
+- QR içerikleri üçüncü taraf QR servisine gönderilmez. QR, Supabase, MindAR ve Three.js kitaplıkları sabit sürümlü CDN bağlantılarından yüklenir.
+- Gerçek servis planındaki trafik kotası, ImageKit dışı dosyalar ve Supabase diğer kullanımları bu 2 GiB göstergesinde yer almaz.
 
-## Bağımlılıklar ve sınırlar
-MindAR 1.2.5 (MIT), A-Frame 1.6.0 (MIT). Sürümler sabitlenmiştir. Başlangıçta kütüphaneler ve örnek hedef internetten yüklenir; CDN kesintileri yüklemeyi etkileyebilir. Tamamen çevrimdışı değildir. Son sürümde kütüphaneler ve hedef dosyaları lisans bildirimleri korunarak yerelleştirilebilir.
-MindAR görüntüleme kotası uygulamaz. GitHub Pages trafik ve kullanım sınırları geçerlidir. Kamera görüntüsünü yükleyen veya kaydeden uygulama kodu yoktur; üçüncü taraf CDN'lere dosya indirme istekleri yapılır. Public depodaki dosyalar herkese açıktır; gizli bilgi yüklemeyin.
-
-Kaynak: https://github.com/hiukim/mind-ar-js
-Örnek hedef: MindAR resmi card-example örneği.
+## Test
+Node 22 ile repo kökünde: `node tests/ar-v2.mjs`
+GitHub Actions aynı kontrolü PR'da çalıştırır. Testler sahte Supabase/ImageKit ile auth, sahiplik, kota, başarılı/başarısız güncelleme ve kayıp commit yanıtını kapsar.
+Gerçek Supabase SQL işlemleri ve mobil tarayıcı, kamera, CDN, QR taranabilirliği ve MP4 desteği canlı ortamda ayrıca denenmelidir.
